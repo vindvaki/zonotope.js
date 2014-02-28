@@ -1,0 +1,79 @@
+<html>
+<head>
+
+  <style>
+   body, html {
+     margin: 0;
+     padding: 0;
+     height: 100%;
+   }
+   div#container {
+     height: auto;
+     overflow: hidden;
+   }
+   
+   div#canvas-container {
+     float: none;
+     overflow: hidden;
+     width: auto;
+     height:100%;
+   }
+
+   div#generators {
+     width: 400px;
+     height: 100%;
+     float: right;
+     background-color: #ccc;
+     overflow:auto;
+   }
+   
+   
+   #generators table {
+/*     border-collapse: collapse;*/
+     width: 100%;
+     color: #222;
+     font-family: monospace;
+     font-size: 11pt;
+   }
+   #generators tr.header {
+   }
+   
+   #generators tr:nth-child(odd) {
+     background-color: #eee;
+   }
+   #generators tr:nth-child(even) {
+     background-color: #ddd;
+   }
+
+   #generators td {
+     padding: 4pt 8pt 4pt 8pt;
+     width: 25%;
+   }
+
+   svg#svg-canvas {
+     height: 100%;
+     width: 100%;
+   }
+  </style>
+</head>
+
+<body onload="main()">
+  <div id="container">
+    <div id="generators">
+      <table>
+      </table>
+    </div>
+
+    <div id="canvas-container">
+      <svg id="svg-canvas"></svg>
+    </div>
+
+  </div>
+
+  <script src="zonotope.js"></script>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="https://rawgithub.com/mrdoob/three.js/master/build/three.js"></script>
+
+</body>
+
+</html>
