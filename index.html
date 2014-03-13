@@ -1,79 +1,176 @@
 <html>
-<head>
+  <head>
 
-  <style>
-   body, html {
-     margin: 0;
-     padding: 0;
-     height: 100%;
-   }
-   div#container {
-     height: auto;
-     overflow: hidden;
-   }
-   
-   div#canvas-container {
-     float: none;
-     overflow: hidden;
-     width: auto;
-     height:100%;
-   }
+    <style>
+     body, html {
+       margin: 0;
+       padding: 0;
+       height: 100%;
+     }
+     div#container {
+       height: auto;
+       overflow: hidden;
+     }
+     
+     div#canvas-container {
+       float: none;
+       overflow: hidden;
+       width: auto;
+       height:100%;
+     }
 
-   div#generators {
-     width: 400px;
-     height: 100%;
-     float: right;
-     background-color: #ccc;
-     overflow:auto;
-   }
-   
-   
-   #generators table {
-/*     border-collapse: collapse;*/
-     width: 100%;
-     color: #222;
-     font-family: monospace;
-     font-size: 11pt;
-   }
-   #generators tr.header {
-   }
-   
-   #generators tr:nth-child(odd) {
-     background-color: #eee;
-   }
-   #generators tr:nth-child(even) {
-     background-color: #ddd;
-   }
+     div#generators {
+       width: 400px;
+       height: 100%;
+       float: right;
+       background-color: #ccc;
+       overflow:auto;
+     }
+     
+     
+     #generators table {
+       /*     border-collapse: collapse;*/
+       width: 100%;
+       color: #222;
+       font-family: monospace;
+       font-size: 10pt;
+     }
+     #generators tr.header {
+       height: 20pt;
+       color: black;
+     }
+     
+     #generators tr:nth-child(odd) {
+       background-color: #eee;
+     }
+     #generators tr:nth-child(even) {
+       background-color: #ddd;
+     }
 
-   #generators td {
-     padding: 4pt 8pt 4pt 8pt;
-     width: 25%;
-   }
+     #generators td {
+       padding: 4pt 8pt 4pt 8pt;
+       width: 25%;
+     }
 
-   svg#svg-canvas {
-     height: 100%;
-     width: 100%;
-   }
-  </style>
-</head>
+     #generators .toolbar {
+       padding: 2pt;
+     }
+     
+     #generators ul, #generators li {
+       list-style: none;
+       margin: 0;
+       padding: 0;
+     }
+     
+     .toolbar a {
+       font-family: sans;
+       color: #555;
+       text-decoration: none;
+       padding: 10pt;
+       display: block;
+       background-color: #bbb;
+       border: 1px solid #999;
+       border-radius: 5pt;
+     }
 
-<body onload="main()">
-  <div id="container">
-    <div id="generators">
-      <table>
-      </table>
+     svg#svg-canvas {
+       height: 100%;
+       width: 100%;
+     }
+    </style>
+
+    <script>
+     function main(d, n) {
+       var d = d||3;
+       var n = 10;
+       var degenerate = false;
+
+       if ( d == 2 ) {
+         generators = randomGenerators(2, n, -100, 100);
+       }
+       if ( d == 3 ) {
+         if ( degenerate ) {
+           generators = randomGenerators(2, n);
+           if ( d == 3 ) {
+             // make a degenerate 3-zonotope
+             for ( var k = 0; k < n-1; ++k ) {
+               generators[k].z = 0;
+             }
+             generators[n-1].z = Math.log(n)/3;
+           }
+         } else {
+           generators = randomGenerators(3, n);
+         }
+       }
+       
+       dataTable = new GeneratorsDataTable(generators);
+       dataTable.init();
+
+       if ( d == 2 ) {
+         main_2d();
+       }
+       if ( d == 3 ) {
+         main_3d();
+       }
+     }
+
+     function main_2d() {
+       var n = generators.length;
+       var offset = {x:200, y:200};
+       var svg = d3.select("#canvas-container")
+                   .append("svg")
+                   .attr("id", "svg-canvas");
+       var zSvg = new ZonogonSvg(svg, generators, offset);
+       zSvg.draw();
+       var k;
+       for ( k = 0; k < n; ++k ) {
+         zSvg.initGeneratorArrow(offset, k);
+       }
+     }
+
+     function main_3d() {
+       zonotopeCanvas = new ZonotopeCanvas3(generators);
+       zonotopeCanvas.drawFacetOutlines = (generators.length < 35);
+       zonotopeCanvas.init();
+       zonotopeCanvas.animate();
+     }
+
+     function switchDimensions() {
+       document.getElementById('generators-table').innerHTML = '';
+       document.getElementById('canvas-container').innerHTML = '';
+       if ( generators[0].z == undefined ) {
+         main(3);
+       } else {
+         main(2);
+       }
+     }
+    </script>
+  </head>
+
+  <body onload="main()">
+    <div id="container">
+      <div id="generators">
+        <div class="toolbar">
+          <ul>
+            <li><a href="javascript:switchDimensions()">Switch dimensions</a></li>
+          </ul>
+        </div>
+        
+        <table id="generators-table">
+        </table>
+      </div>
+
+      <div id="canvas-container">
+      </div>
+
     </div>
 
-    <div id="canvas-container">
-      <svg id="svg-canvas"></svg>
-    </div>
+    <script src="zonotope.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <!--  <script src="three.js/build/three.js"></script>  -->
+    <script src="https://rawgithub.com/mrdoob/three.js/master/build/three.js"></script>
 
-  </div>
 
-  <script src="zonotope.js"></script>
-  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-  <script src="https://rawgithub.com/mrdoob/three.js/master/build/three.js"></script>
-
-</body>
+  </body>
 
 </html>
