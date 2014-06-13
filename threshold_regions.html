@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Interactive planar threshold regions</title>
+		<meta name="author" content="Hordur Freyr Yngvason">
+		
+		<style>
+		 body, html {
+			 margin: 0;
+			 padding: 0;
+		 }
+
+		 #threshold-regions-svg-container {
+			 float: left;
+			 width: 100%;
+			 margin: 0;
+			 padding: 0;
+		 }
+		 #threshold-regions-svg {
+			 float: left;
+		 }
+		 
+		</style>
+	</head>
+
+	<body onload="draw_planar_threshold_regions(30);">
+		<div id="threshold-regions-svg-container"></div>
+
+		<!-- The interactive Zonotope drawings -->
+		<script src="external/d3/d3.min.js" charset="utf-8"></script>
+		<script src="external/zonotope.js/zonotope.js"></script>
+		<script src="external/zonotope.js/zonotope_drawings.js"></script>
+
+	</body>
+</html>
