@@ -574,17 +574,17 @@ function d3DefineArrowhead(svg, id, marker) {
 //
 // ZonogonSvg wrapper
 //
-function ZonogonSvg(svg, generators, offset) {
+function ZonogonSvg(svg, generators, offset, zonogonId) {
   this.svg = svg;
   this.generators = generators;
   this.offset = offset;
   this.zonogon = zonogon(generators);
-  this.zonogonId = "zonogon";
+  this.zonogonId = zonogonId || "zonogon";
 
 
   // Arrowhead config
-  this.arrowheadIdDefault = 'arrowhead-default';
-  this.arrowheadIdActive = 'arrowhead-active';
+  this.arrowheadIdDefault = zonogonId + 'arrowhead-default';
+  this.arrowheadIdActive = zonogonId + 'arrowhead-active';
   this.arrowheadMarkerSize = 3;
   this.arrowheadLength = 3*this.arrowheadMarkerSize;
 
@@ -592,7 +592,7 @@ function ZonogonSvg(svg, generators, offset) {
   this.arrowheadUrlActive = 'url(#' + this.arrowheadIdActive + ')';
 
   // Arrow colors
-  this.arrowColorDefault = 'steelblue';
+  this.arrowColorDefault = 'black';
   this.arrowColorActive = 'red';
 
   // Set up svg defs
@@ -605,6 +605,7 @@ function ZonogonSvg(svg, generators, offset) {
   this.polygonStrokeColor = "black";
   this.polygonStrokeWidth = 2;
   this.polygonFill = "none";
+  this.polygonFillOpacity = 1;
 }
 
 ZonogonSvg.prototype.drawPath = function(pathId, pathArr, offset) {
@@ -629,6 +630,7 @@ ZonogonSvg.prototype.drawPolygon = function(polygonId, polygonArr, offset) {
         .style("stroke-width", this.polygonStrokeWidth)
         .style("stroke", this.polygonStrokeColor)
         .attr("fill", this.polygonFill)
+        .attr("fill-opacity", this.polygonFillOpacity)
         .attr("id", polygonId);
   return polygonSvg;
 };
@@ -640,7 +642,9 @@ ZonogonSvg.prototype.drawArrow = function(arrowId, arrowOrigin, arrowEndpoint) {
     .attr("stroke", this.arrowColorDefault);
 };
 
-ZonogonSvg.prototype.initGeneratorArrow = function(origin, k) {
+ZonogonSvg.prototype.initGeneratorArrow = function(origin, k, callback) {
+  callback = callback || (function() {});
+  
   var _this = this;
   var generators = _this.generators;
 
@@ -674,15 +678,15 @@ ZonogonSvg.prototype.initGeneratorArrow = function(origin, k) {
         .style("opacity", 0)
         .style("stroke-width", 10);
 
-  arrow.tr = d3.select("#generator-tr-"+k);
-  arrow.trDefaultColor = arrow.tr.style("color");
+//  arrow.tr = d3.select("#generator-tr-"+k);
+//  arrow.trDefaultColor = arrow.tr.style("color");
 
   var setActiveColor = function() {
     arrow.selection
       .attr("stroke", _this.arrowColorActive)
       .attr("marker-end", _this.arrowheadUrlActive);
     
-    arrow.tr.style("color", _this.arrowColorActive);
+//    arrow.tr.style("color", _this.arrowColorActive);
   };
 
   var setDefaultColor = function() {
@@ -693,7 +697,7 @@ ZonogonSvg.prototype.initGeneratorArrow = function(origin, k) {
       .attr("stroke", _this.arrowColorDefault)
       .attr("marker-end", _this.arrowheadUrlDefault);
 
-    arrow.tr.style("color", arrow.trDefaultColor);
+//    arrow.tr.style("color", arrow.trDefaultColor);
   };
   
 
@@ -725,8 +729,10 @@ ZonogonSvg.prototype.initGeneratorArrow = function(origin, k) {
 
     _this.zonogon = zonogon(generators);
     _this.redraw();
+    
+    callback();
  
-    dataTable.update();
+//    dataTable.update();
   });
 
   arrow.dragBehavior.on('dragstart', function() {
@@ -785,9 +791,10 @@ function randomGenerators(d, n, lo, hi) {
 // 3D zonotope canvas wrapper
 //
 
-function ZonotopeCanvas3(generators, drawFacetOutlines, degenerate) {
+function ZonotopeCanvas3(generators, drawFacetOutlines, degenerate, canvasId) {
+  this.canvasId = canvasId || "canvas-container";
   this.drawFacetOutlines = drawFacetOutlines || false;
-  this.parentElement = document.getElementById("canvas-container");
+  this.parentElement = document.getElementById(this.canvasId);
   
   this.generators = generators;
   this.degenerate = degenerate || false;
