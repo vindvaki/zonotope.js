@@ -1,5 +1,5 @@
-function draw_planar_zonogon(num_generators) {
-  var n = num_generators || 7;
+function drawPlanarZonogon(numGenerators) {
+  var n = numGenerators || 7;
   var d = 2;
   var generators = randomGenerators(d, n, -100, 100);
   var offset = { x: 600, y: 200 };
@@ -15,8 +15,8 @@ function draw_planar_zonogon(num_generators) {
   }
 }
 
-function draw_planar_threshold_regions(num_generators) {
-  var n = num_generators || 30; // number of generators
+function drawPlanarThresholdRegions(numGenerators) {
+  var n = numGenerators || 30; // number of generators
   var d = 2;                    // output dimension (always planar)
   var opacity = 1.5 / (n+1);    // opacity of individual zonogons in [0, 1]
   var fillColor = "#eee";       // fill color of --
