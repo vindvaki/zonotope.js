@@ -878,7 +878,7 @@ ZonotopeCanvas3.prototype.init = function() {
 
   window.addEventListener('resize', this.onWindowResize.bind(this), false);
   
-  this.controls = new THREE.TrackballControls( this.camera );
+  this.controls = new THREE.TrackballControls( this.camera, this.parentElement );
   this.controls.rotateSpeed = 1.0;
   this.controls.zoomSpeed = 1.0;
   this.controls.panSpeed = 0.8;
