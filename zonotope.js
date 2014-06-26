@@ -877,21 +877,24 @@ ZonotopeCanvas3.prototype.init = function() {
   this.parentElement.appendChild( this.renderer.domElement );
 
   window.addEventListener('resize', this.onWindowResize.bind(this), false);
+  
+  this.controls = new THREE.TrackballControls( this.camera );
+  this.controls.rotateSpeed = 1.0;
+  this.controls.zoomSpeed = 1.0;
+  this.controls.panSpeed = 0.8;
+  
+  this.controls.noZoom = false;
+  this.controls.noPan = false;
+
+  this.controls.staticMoving = true;
+  this.controls.dynamicDampingFactor = 0.3;
 };
 
+
 ZonotopeCanvas3.prototype.animate = function() {
-  window.requestAnimationFrame( this.animate.bind(this) );
-  var xRotation = 0.01;
-  var yRotation = 0.01;
-  
-  this.mesh.rotation.x += xRotation;
-  this.mesh.rotation.y += yRotation;
-  if ( this.drawFacetOutlines ) {
-    this.lineObject3D.rotation.x += xRotation;
-    this.lineObject3D.rotation.y += yRotation;
-  }
-  
-  this.renderer.render( this.scene, this.camera );
+  window.requestAnimationFrame( this.animate.bind(this) );  
+  this.controls.update();
+  this.renderer.render(this.scene, this.camera);
 };
 
 ZonotopeCanvas3.prototype.onWindowResize = function() {
