@@ -1,184 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>Three dimensional zonotope renderer</title>
-		<meta name="author" content="Hordur Freyr Yngvason">
-		
-		<style>
+<head>
+	<meta charset="utf-8">
+	<title>Three dimensional zonotope renderer</title>
+	<meta name="author" content="Hordur Freyr Yngvason">
 
-		 body, html {
-			 margin: 0;
-			 padding: 0;
-			 width: 100%;
-			 height: 100%;
-		 }
+	<style>
 
-		 #zonotope-canvas-container {
-			 float: left;
-			 width: 50%;
-			 height: 100%;
-			 margin: 0;
-			 padding: 0;
-		 }
+	body, html {
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+	}
 
-		 #zonotope-canvas-container canvas {
-			 height: 99%;
-			 margin: 0;
-			 padding: 0;
-		 }		 
+	#zonotope-canvas-container {
+		float: left;
+		width: 50%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+	}
 
-		 #zonotope-generators-input-form {
-			 float: left;
-			 width: 50%;
-			 height: 100%;
-			 background: #eee;
-			 margin: 0;
-			 padding: 0;
-		 }
+	#zonotope-canvas-container canvas {
+		height: 99%;
+		margin: 0;
+		padding: 0;
+	}
 
-		 #zonotope-generators-input-form textarea {
-			 color: #666;
-			 background: none;
-			 float: left;
-			 display: block;
-			 resize: none;
-			 margin: 0;
-			 padding: 10px;
-			 width: calc(100% - 20px);
-			 height: calc(100% - 60px);
-			 border: none;
-		 }
+	#zonotope-generators-input-form {
+		float: left;
+		width: 50%;
+		height: 100%;
+		background: #eee;
+		margin: 0;
+		padding: 0;
+	}
 
-		 #zonotope-generators-input-form button {
-			 font-size: 20px;
-			 float: left;
-			 width: 100%;
-			 height: 40px;
-			 margin: 0;
-			 padding: 0;
-			 border: none;
-			 background: #ccc;
-			 color: #333;
-		 }
+	#zonotope-generators-input-form textarea {
+		color: #666;
+		background: none;
+		float: left;
+		display: block;
+		resize: none;
+		margin: 0;
+		padding: 10px;
+		width: calc(100% - 20px);
+		height: calc(100% - 60px);
+		border: none;
+	}
 
-		 #zonotope-generators-input-form button:hover {
-			 background: #ddd;
-			 color: #444;;
-		 }
-		 
-		</style>
-	</head>
+	#zonotope-generators-input-form button {
+		font-size: 20px;
+		float: left;
+		width: 100%;
+		height: 40px;
+		margin: 0;
+		padding: 0;
+		border: none;
+		background: #ccc;
+		color: #333;
+	}
 
-	<body onload="init()">
-		<div id="zonotope-canvas-container"></div>
-		<form id="zonotope-generators-input-form">
-			<textarea></textarea>
-			<button type="button" onclick="renderFromInput()">Render</button>
-		</form>
+	#zonotope-generators-input-form button:hover {
+		background: #ddd;
+		color: #444;;
+	}
 
-		<!-- The interactive Zonotope drawings -->
-		<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-		<script src="https://rawgithub.com/mrdoob/three.js/master/build/three.js"></script>
-		<script src="https://rawgithub.com/mrdoob/three.js/master/examples/js/controls/TrackballControls.js"></script>
-		<script src="zonotope.js"></script>
-		
-		<script>
-		 function getGenerators() {
-			 if (zonotopeGeneratorsTextarea.value == "") {
-				 return [];
-			 }
-			 var lines = zonotopeGeneratorsTextarea.value.trim().split('\n');
-			 var result = [];
-			 var i, currentLine;
-			 for ( i = 0; i < lines.length; ++i ) {
-				 currentLine = lines[i].split(/[\s]+/);
-				 result[i] = {};
-				 result[i].x = Number(currentLine[0]);
-				 result[i].y = Number(currentLine[1]);
-				 result[i].z = Number(currentLine[2]);
-			 }
-			 return result;
-		 }
-		 
-		 function init() {
-			 zonotopeGeneratorsTextarea = document.querySelector("#zonotope-generators-input-form textarea");
+	</style>
+</head>
 
-			 var n = 10;
-			 var k;
-			 generators = randomGenerators(3, n);
-			 formStringArray = [];
-			 for ( k = 0; k < n; ++k ) {
-				 formStringArray[k] = [generators[k].x,
-															 generators[k].y,
-															 generators[k].z].join(" ");
-			 }
-			 zonotopeGeneratorsTextarea.value = formStringArray.join("\n");
-		 }
+<body onload="init()">
+	<div id="zonotope-canvas-container"></div>
+	<form id="zonotope-generators-input-form">
+		<textarea></textarea>
+		<button type="button" onclick="renderFromInput()">Render</button>
+	</form>
 
+	<!-- The interactive Zonotope drawings -->
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<!-- <script src="https://rawgithub.com/mrdoob/three.js/master/build/three.js"></script> -->
+	<script src="three.js/build/three.js"></script>
+	<script src="https://rawgithub.com/mrdoob/three.js/master/examples/js/controls/TrackballControls.js"></script>
+	<script src="zonotope.js"></script>
 
-		 /**
-			* Based on tutorial: http://soledadpenades.com/articles/three-js-tutorials/drawing-the-coordinate-axes/
-			*/
-		 function buildAxis( src, dst, colorHex, dashed ) {
-       var geom = new THREE.Geometry(),
-       mat;
+	<script>
 
-       if(dashed) {
-         mat = new THREE.LineDashedMaterial({ linewidth: 3, color: colorHex, dashSize: 3, gapSize: 3 });
-       } else {
-         mat = new THREE.LineBasicMaterial({ linewidth: 3, color: colorHex });
-       }
+	function getGenerators() {
+		if (zonotopeGeneratorsTextarea.value == "") {
+			return [];
+		}
+		var lines = zonotopeGeneratorsTextarea.value.trim().split('\n');
+		var result = [];
+		var i, currentLine;
+		for ( i = 0; i < lines.length; ++i ) {
+			currentLine = lines[i].split(/[\s]+/);
+			result[i] = {};
+			result[i].x = Number(currentLine[0]);
+			result[i].y = Number(currentLine[1]);
+			result[i].z = Number(currentLine[2]);
+		}
+		return result;
+	}
 
-       geom.vertices.push( src.clone() );
-       geom.vertices.push( dst.clone() );
-       geom.computeLineDistances(); // This one is SUPER important, otherwise dashed lines will appear as simple plain lines
+	function init() {
+		zonotopeGeneratorsTextarea = document.querySelector("#zonotope-generators-input-form textarea");
 
-       var axis = new THREE.Line( geom, mat, THREE.LinePieces );
-
-       return axis;
-
-		 }
-		 /**
-			* Based on tutorial: http://soledadpenades.com/articles/three-js-tutorials/drawing-the-coordinate-axes/
-			* X axis: Red
-		 	* Y axis: Blue
-		  * Z axis: Green
-
-			*/
-		 function buildAxes( length ) {
-       var axes = new THREE.Object3D();
-
-       axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( length, 0, 0 ),  0xFF0000, false ) ); // +X
-       axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( -length, 0, 0 ), 0xFF0000, true) );   // -X
-			 
-       axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, length, 0 ),  0x00FF00, false ) ); // +Y
-       axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, -length, 0 ), 0x00FF00, true ) );  // -Y
-			 
-       axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, length ),  0x0000FF, false ) ); // +Z
-       axes.add( buildAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, -length ), 0x0000FF, true ) );  // -Z
-
-       return axes;
-		 }
-		 
-		 function renderFromInput() {
-			 generators = getGenerators();
-			 var drawFacetOutlines = true;
-			 var degenerateData = false;
-			 zonotopeCanvas = new ZonotopeCanvas3(generators,
-																						drawFacetOutlines,
-																						degenerateData,
-																						'zonotope-canvas-container');
-			 zonotopeCanvas.parentElement.innerHTML = "";
-			 zonotopeCanvas.init();
-			 zonotopeCanvas.axes = buildAxes(1000)
-			 zonotopeCanvas.scene.add(zonotopeCanvas.axes);
-
-			 zonotopeCanvas.animate();
-		 }
+		var n = 10;
+		var k;
+		generators = randomGenerators(3, n);
+		formStringArray = [];
+		for ( k = 0; k < n; ++k ) {
+			formStringArray[k] = [generators[k].x,
+			generators[k].y,
+			generators[k].z].join(" ");
+		}
+		zonotopeGeneratorsTextarea.value = formStringArray.join("\n");
+	}
 
 
-		</script>
+	/**
+	* Based on tutorial: http://soledadpenades.com/articles/three-js-tutorials/drawing-the-coordinate-axes/
+	*/
+	function buildSingleAxis( src, dst, colorHex, dashed, dashSize, gapSize ) {
+		var geom = new THREE.Geometry();
+		var mat;
 
-	</body>
+		dashSize = dashSize || 1;
+		gapSize  = gapSize  || dashSize;
+
+		if(dashed) {
+			mat = new THREE.LineDashedMaterial({ linewidth: 3, color: colorHex, dashSize: dashSize, gapSize: gapSize });
+		} else {
+			mat = new THREE.LineBasicMaterial({ linewidth: 3, color: colorHex });
+		}
+
+		geom.vertices.push( src.clone() );
+		geom.vertices.push( dst.clone() );
+		geom.computeLineDistances(); // This one is SUPER important, otherwise dashed lines will appear as simple plain lines
+
+		var axis = new THREE.Line( geom, mat, THREE.LinePieces );
+
+		return axis;
+
+	}
+	/**
+	* Based on tutorial: http://soledadpenades.com/articles/three-js-tutorials/drawing-the-coordinate-axes/
+	* X axis: Red
+	* Y axis: Blue
+	* Z axis: Green
+
+	*/
+	function buildAxesXYZ( axisLength, colorX, colorY, colorZ ) {
+
+		var axes = new THREE.Object3D();
+		colorX = colorX || 0xFF0000;
+		colorY = colorY || 0x00FF00;
+		colorZ = colorZ || 0x0000FF;
+
+
+		axes.add( buildSingleAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( axisLength, 0,  0 ), colorX, false ) ); // +X
+		axes.add( buildSingleAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( -axisLength, 0, 0 ), colorX, true  ) ); // -X
+
+		axes.add( buildSingleAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, axisLength,  0 ), colorY, false ) ); // +Y
+		axes.add( buildSingleAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, -axisLength, 0 ), colorY, true  ) ); // -Y
+
+		axes.add( buildSingleAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, axisLength  ), colorZ, false ) ); // +Z
+		axes.add( buildSingleAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, -axisLength ), colorZ, true  ) ); // -Z
+
+		return axes;
+	}
+
+	function renderFromInput() {
+		generators = getGenerators();
+		var drawFacetOutlines = false;
+		var degenerateData = false;
+		zonotopeCanvas = new ZonotopeCanvas3(
+			generators,
+			drawFacetOutlines,
+			degenerateData,
+			'zonotope-canvas-container'
+		);
+		zonotopeCanvas.parentElement.innerHTML = "";
+		zonotopeCanvas.init();
+		zonotopeCanvas.axes = buildAxesXYZ(1000);
+		zonotopeCanvas.scene.add(zonotopeCanvas.axes);
+
+		zonotopeCanvas.animate();
+	}
+
+	</script>
+
+</body>
 </html>
