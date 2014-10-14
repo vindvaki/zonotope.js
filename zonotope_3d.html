@@ -16,10 +16,12 @@
 
 	#zonotope-canvas-container {
 		float: left;
-		width: 50%;
+		width: 49%;
 		height: 100%;
 		margin: 0;
 		padding: 0;
+		overflow: none;
+		z-index: 0;
 	}
 
 	#zonotope-canvas-container canvas {
@@ -29,12 +31,13 @@
 	}
 
 	#zonotope-generators-input-form {
-		float: left;
+		float: right;
 		width: 50%;
 		height: 100%;
 		background: #eee;
 		margin: 0;
 		padding: 0;
+		z-index: 30;
 	}
 
 	#zonotope-generators-input-form textarea {
@@ -79,8 +82,7 @@
 
 	<!-- The interactive Zonotope drawings -->
 	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-	<!-- <script src="https://rawgithub.com/mrdoob/three.js/master/build/three.js"></script> -->
-	<script src="three.js/build/three.js"></script>
+	<script src="https://rawgithub.com/mrdoob/three.js/master/build/three.js"></script>
 	<script src="https://rawgithub.com/mrdoob/three.js/master/examples/js/controls/TrackballControls.js"></script>
 	<script src="zonotope.js"></script>
 
