@@ -499,8 +499,11 @@ function finalizeFacet3(f, generators) {
     currentVertex = Geom3.add(currentVertex, projectedEdges[j].preimage);
   }
 
-  if ( Geom3.dot(f.vertices[1], f.normal) < 0 ) {
+  f.normal = Geom3.scale((1.0 / Geom3.norm(f.normal)), f.normal);
+  if ( Geom3.dot(f.vertices[0], f.normal) < 0 ) {
+    // ensure normal points out of the interior and vertices are counterclockwise
     f.normal = Geom3.antipode(f.normal);
+    f.vertices.reverse();
   }
 }
 
@@ -791,13 +794,17 @@ function randomGenerators(d, n, lo, hi) {
 // 3D zonotope canvas wrapper
 //
 
-function ZonotopeCanvas3(generators, drawFacetOutlines, degenerate, canvasId) {
+function ZonotopeCanvas3(generators, drawFacetOutlines, degenerate, canvasId, resolution, opacity) {
   this.canvasId = canvasId || "canvas-container";
   this.drawFacetOutlines = drawFacetOutlines || false;
   this.parentElement = document.getElementById(this.canvasId);
+  this.renderWidth = 1000 || resolution.width;
+  this.renderHeight = 1000 || resolution.height;
 
   this.generators = generators;
   this.degenerate = degenerate || false;
+  this.opacity = 0.75 || opacity;
+  this.transparent = true;( opacity >= 0.99 );
 
   this.linewidth = 1;
 
@@ -810,16 +817,16 @@ function ZonotopeCanvas3(generators, drawFacetOutlines, degenerate, canvasId) {
   this.sideLength = 1;
 }
 
-ZonotopeCanvas3.prototype.width = function() {
-    return this.parentElement.offsetWidth;
+ZonotopeCanvas3.prototype.canvasWidth = function() {
+    return  this.parentElement.offsetWidth;
 };
 
-ZonotopeCanvas3.prototype.height = function() {
+ZonotopeCanvas3.prototype.canvasHeight = function() {
     return this.parentElement.offsetHeight;
 };
 
 ZonotopeCanvas3.prototype.aspect = function() {
-  return this.width() / this.height();
+  return this.canvasWidth() / this.canvasHeight();
 };
 
 ZonotopeCanvas3.prototype.init = function() {
@@ -850,7 +857,7 @@ ZonotopeCanvas3.prototype.init = function() {
       color:0x000000,
       linewidth: this.linewidth
     });
-    this.lineObject3D = new THREE.Object3D;
+    this.lineObject3D = new THREE.Object3D();
 
     for ( i = 0; i < this.zonotope.length; ++i ) {
       var f = this.zonotope[i];
@@ -862,16 +869,31 @@ ZonotopeCanvas3.prototype.init = function() {
       f.lineMesh = new THREE.Line(f.lineGeometry, this.lineMaterial);
       this.lineObject3D.add(f.lineMesh);
     }
+    this.scene.add(this.lineObject3D);
   }
 
   this.geometry = zonotopeGeometry3(this.zonotope);
-  this.meshNormalMaterial = new THREE.MeshNormalMaterial({ side: THREE.DoubleSide, transparent: false, opacity: 0.7 });
-  this.mesh = new THREE.Mesh(this.geometry, this.meshNormalMaterial);
-  this.scene.add( this.mesh );
-  this.scene.add(this.lineObject3D);
+
+  this.meshFrontNormalMaterial = new THREE.MeshNormalMaterial({
+    side: THREE.FrontSide,
+    transparent: this.transparent,
+    opacity: this.opacity,
+  });
+
+  this.meshBackNormalMaterial = new THREE.MeshNormalMaterial({
+    side: THREE.BackSide,
+    transparent: this.transparent,
+    opacity: this.opacity,
+  });
+
+  this.frontMesh = new THREE.Mesh(this.geometry, this.meshFrontNormalMaterial);
+  this.backMesh = new THREE.Mesh(this.geometry, this.meshBackNormalMaterial);
+
+  this.scene.add(this.frontMesh);
+  this.scene.add(this.backMesh);
 
   this.renderer = new THREE.WebGLRenderer({antialias: true});
-  this.renderer.setSize(this.width(), this.height());
+  this.renderer.setSize(this.canvasWidth(), this.canvasHeight());
   this.renderer.setClearColor( 0xffffff, 1 ); // white background
 
   this.parentElement.appendChild( this.renderer.domElement );
@@ -900,7 +922,7 @@ ZonotopeCanvas3.prototype.animate = function() {
 ZonotopeCanvas3.prototype.onWindowResize = function() {
   this.camera.aspect = this.aspect();
   this.camera.updateProjectionMatrix();
-  this.renderer.setSize(this.width(), this.height());
+  this.renderer.setSize(this.canvasWidth(), this.canvasHeight());
 };
 
 
