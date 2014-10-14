@@ -1,17 +1,17 @@
 
 //
-// A module for functional 2-dimensional geometry 
+// A module for functional 2-dimensional geometry
 //
 
 var Geom2 = {
   parallel: function(p, q) {
     return p.x * q.y == p.y * q.x;
   },
-  
+
   str: function(p) {
     return p.x + ',' + p.y;
   },
-  
+
   equals: function(p, q) {
     return p.x == q.x && p.y == q.y;
   },
@@ -44,8 +44,8 @@ var Geom2 = {
       return 0;
     }
     // p != q
-    
-    if ( p.y == 0 ) {
+
+    if ( p.y === 0 ) {
       if ( p.x >= 0 ) {
         return -1;
       }
@@ -58,7 +58,7 @@ var Geom2 = {
     }
     // p.y != 0
 
-    if ( q.y == 0 ) {
+    if ( q.y === 0 ) {
       if ( q.x >= 0 ) {
         return 1;
       }
@@ -69,7 +69,7 @@ var Geom2 = {
       return 1;
     }
     // q.y != 0
-    
+
     if ( p.y > 0 && q.y < 0 ) {
       return -1;
     }
@@ -92,12 +92,12 @@ var Geom2 = {
 
 function zonogon(generators) {
   var edges, vertices, offset, i, v;
-  
+
   edges = [];
   offset = {x: 0, y: 0};
   for ( i = 0; i < generators.length; ++i ) {
     v = generators[i];
-    if ( ( v.y < 0 ) || ( v.y == 0 && v.x < 0 ) ) {
+    if ( ( v.y < 0 ) || ( v.y === 0 && v.x < 0 ) ) {
       offset = Geom2.add(offset, v);
     }
     edges.push(v);
@@ -128,7 +128,7 @@ var Geom3 = {
   norm: function(p) {
     return Math.sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
   },
-  
+
   add: function(p, q) {
     return {
       x: p.x + q.x,
@@ -192,11 +192,11 @@ var Geom3 = {
       return b;
     }
     var tmp;
-    
+
     tmp = x[2];
     x[2] = x[j];
     x[j] = tmp;
-    
+
     tmp = b[2];
     b[2] = b[j];
     b[j] = tmp;
@@ -223,7 +223,7 @@ var Geom3 = {
 //
 
 // We return a list of the facets of the form
-// 
+//
 // var facet = {
 //   normal: {x, y, z},       // a nonzero vector
 //   basis: [u,v]             // u, v independent vectors spanning ker(normal)
@@ -239,14 +239,14 @@ function zonotope3(generators) {
 
   var facetList = [];
   var facetMap = [];
-  
+
   var n = generators.length;
   var i, j, k;
   var u, v, w;
 
   var f, fpos, fneg, fgen;
   var normal;
-  
+
   for ( i = 0; i < n; ++i ) {
     facetMap[i] = [];
     for ( j = 0; j < n; ++j ) {
@@ -272,21 +272,21 @@ function zonotope3(generators) {
         fpos = {};
         fneg = {};
         v = generators[j];
-        
+
         fpos.normal = Geom3.crossProduct(u, v);
-        if ( fpos.normal.x == 0
-             && fpos.normal.y == 0
-             && fpos.normal.z == 0 )
+        if ( fpos.normal.x === 0 &&
+             fpos.normal.y === 0 &&
+             fpos.normal.z === 0 )
         {
           // u and v are parallel
           continue;
         }
         fneg.normal = Geom3.antipode(fpos.normal);
         fpos.basis = fneg.basis = [u,v];
-        
+
         fpos.offset = {x: 0, y: 0, z: 0};
         fneg.offset = {x: 0, y: 0, z: 0};
-        
+
         fpos.generators = fgen;
         fneg.generators = fgen;
 
@@ -297,7 +297,7 @@ function zonotope3(generators) {
             if ( cmp > 0 ) {
               fpos.offset = Geom3.add(fpos.offset, w);
             }
-            if ( cmp == 0 ) {
+            if ( cmp === 0 ) {
               if ( k < i ) {
                 // (i, j) is not lexicographically canonical
                 break;
@@ -332,7 +332,7 @@ function zonotope3(generators) {
 //
 // An alternative implementation of the 3-zonotope construction.
 //
-// Complexity: \Theta(n^2\log(n)) 
+// Complexity: \Theta(n^2\log(n))
 //
 function zonotope3_GeneralPosition(generators) {
   var facetList = [];
@@ -344,7 +344,7 @@ function zonotope3_GeneralPosition(generators) {
 
   //
   // intermediate facet list (normals, offsets and generators)
-  // 
+  //
   for ( i = 0; i < n; ++i ) {
     u = generators[i];
     var firstParallelGeneratorIndex = i;
@@ -363,7 +363,7 @@ function zonotope3_GeneralPosition(generators) {
         sign: 1
       };
 
-      if ( w.x == 0 && w.y == 0 ) {
+      if ( w.x === 0 && w.y === 0 ) {
         // offset = Geom3.add(offset, v);
         parallelGeneratorIndexes.push( j );
         if ( j < firstParallelGeneratorIndex ) {
@@ -372,8 +372,8 @@ function zonotope3_GeneralPosition(generators) {
         }
         continue;
       }
-      
-      if ( w.y < 0 || ( w.y == 0 && w.x < 0 ) ) {
+
+      if ( w.y < 0 || ( w.y === 0 && w.x < 0 ) ) {
         offset = Geom3.add(offset, v);
       }
 
@@ -386,30 +386,30 @@ function zonotope3_GeneralPosition(generators) {
       };
       events.push(w);
     }
-    
+
     if ( firstParallelGeneratorIndex < i ) {
       // a batch for a generator parallel to generators[i] has already been handled
       continue;
     }
-    
+
     events.sort(Geom2.compareByAngle);
-    
+
     var eventIndex = 0;
     while ( eventIndex < events.length ) {
       w = events[eventIndex];
       j = w.label;
       v = Geom3.scale(w.sign, generators[j]);
-      
+
       var j_min = j; // smallest j s.t. [i, j] spans the facet
       var js = [j];  // the list of all j s.t. [i, j] spans the facet
-      
+
       var offsetDeltaPositive = {x:0,y:0,z:0};
       var offsetDeltaNegative = {x:0,y:0,z:0};
-      
+
       if ( w.sign == 1 ) {
         offsetDeltaPositive = Geom3.add(offsetDeltaPositive, v);
       }
-      
+
       if ( w.sign == -1 ) {
         offsetDeltaNegative = Geom3.add(offsetDeltaNegative, v);
       }
@@ -422,17 +422,17 @@ function zonotope3_GeneralPosition(generators) {
         if ( j < j_min ) {
           j_min = j;
         }
-        
+
         v = Geom3.scale(w.sign, generators[j]);
-        
+
         if ( w.sign == 1 ) {
           offsetDeltaPositive = Geom3.add(offsetDeltaPositive, v);
         }
-        
+
         if ( w.sign == -1 ) {
           offsetDeltaNegative = Geom3.add(offsetDeltaNegative, v);
         }
-        
+
         js.push(j);
       }
 
@@ -450,13 +450,13 @@ function zonotope3_GeneralPosition(generators) {
         finalizeFacet3(f, generators);
         facetList.push(f);
       }
-      
+
       offset = Geom3.add(offset, offsetDeltaPositive);
-      
+
       ++eventIndex;
     }
   }
-  
+
   return facetList;
 }
 
@@ -467,7 +467,7 @@ function zonotope3_GeneralPosition(generators) {
  */
 function finalizeFacet3(f, generators) {
   f.vertices = [];
-  
+
   var j, u, v;
   var c = f.basis;
   var projectedEdges = [];
@@ -481,7 +481,7 @@ function finalizeFacet3(f, generators) {
     };
     projectedEdges.push(v);
 
-    if ( v.y < 0 || (v.y == 0 && v.x < 0 ) ) {
+    if ( v.y < 0 || (v.y === 0 && v.x < 0 ) ) {
       currentVertex = Geom3.add(currentVertex, u);
     }
 
@@ -493,12 +493,12 @@ function finalizeFacet3(f, generators) {
     projectedEdges.push(v);
   }
   projectedEdges.sort(Geom2.compareByAngle);
-  
+
   for ( j = 0; j < projectedEdges.length; ++j ) {
     f.vertices.push(currentVertex);
     currentVertex = Geom3.add(currentVertex, projectedEdges[j].preimage);
   }
-  
+
   if ( Geom3.dot(f.vertices[1], f.normal) < 0 ) {
     f.normal = Geom3.antipode(f.normal);
   }
@@ -509,7 +509,7 @@ function finalizeFacet3(f, generators) {
  */
 function zonotopeGeometry3(zonotopeFacetList) {
   var f, v;
-  
+
   var geometry = new THREE.Geometry();
   var vertexMap = {};
   var vertexList = [];
@@ -527,7 +527,7 @@ function zonotopeGeometry3(zonotopeFacetList) {
         geometry.faces.push( new THREE.Face3(f.vertices[0].vertexListIndex, // reference point
                                              f.vertices[facetVertexIndex-1].vertexListIndex, // neighbor
                                              f.vertices[facetVertexIndex].vertexListIndex,
-                                             new THREE.Vector3(f.normal.x, f.normal.y, f.normal.z))); 
+                                             new THREE.Vector3(f.normal.x, f.normal.y, f.normal.z)));
       }
       ++currentVertexIndex;
     }
@@ -644,7 +644,7 @@ ZonogonSvg.prototype.drawArrow = function(arrowId, arrowOrigin, arrowEndpoint) {
 
 ZonogonSvg.prototype.initGeneratorArrow = function(origin, k, callback) {
   callback = callback || (function() {});
-  
+
   var _this = this;
   var generators = _this.generators;
 
@@ -672,8 +672,8 @@ ZonogonSvg.prototype.initGeneratorArrow = function(origin, k, callback) {
       y: (arrow.endpoint.y-origin.y) * scale + origin.y
     };
   };
-  
-  arrow.clickTargetSelection = 
+
+  arrow.clickTargetSelection =
         this.drawPath( arrow.clickTargetId, [origin, arrow.clickTargetEndpoint()], {x:0,y:0} )
         .style("opacity", 0)
         .style("stroke-width", 10);
@@ -685,7 +685,7 @@ ZonogonSvg.prototype.initGeneratorArrow = function(origin, k, callback) {
     arrow.selection
       .attr("stroke", _this.arrowColorActive)
       .attr("marker-end", _this.arrowheadUrlActive);
-    
+
 //    arrow.tr.style("color", _this.arrowColorActive);
   };
 
@@ -699,7 +699,7 @@ ZonogonSvg.prototype.initGeneratorArrow = function(origin, k, callback) {
 
 //    arrow.tr.style("color", arrow.trDefaultColor);
   };
-  
+
 
   //
   // Drag behavior
@@ -729,9 +729,9 @@ ZonogonSvg.prototype.initGeneratorArrow = function(origin, k, callback) {
 
     _this.zonogon = zonogon(generators);
     _this.redraw();
-    
+
     callback();
- 
+
 //    dataTable.update();
   });
 
@@ -744,9 +744,9 @@ ZonogonSvg.prototype.initGeneratorArrow = function(origin, k, callback) {
     arrow.dragging = false;
     setDefaultColor();
   });
-  
+
   arrow.clickTargetSelection.call(arrow.dragBehavior);
-  
+
   return arrow;
 };
 
@@ -763,7 +763,7 @@ function randomGenerators(d, n, lo, hi) {
 
   lo = lo || -1;
   hi = hi || 1;
-    
+
   var randomNumber = function() {
     return lo + Math.random()*(hi - lo) ;
   };
@@ -777,8 +777,8 @@ function randomGenerators(d, n, lo, hi) {
     }
     return v;
   };
-  
-  var generators = [];  
+
+  var generators = [];
   for ( var k = 0; k < n; ++k ) {
     generators[k] = randomVector();
     generators[k].k = k;
@@ -795,18 +795,18 @@ function ZonotopeCanvas3(generators, drawFacetOutlines, degenerate, canvasId) {
   this.canvasId = canvasId || "canvas-container";
   this.drawFacetOutlines = drawFacetOutlines || false;
   this.parentElement = document.getElementById(this.canvasId);
-  
+
   this.generators = generators;
   this.degenerate = degenerate || false;
 
   this.linewidth = 1;
-  
+
   if ( degenerate ) {
     this.zonotope = zonotope3(this.generators);
   } else {
     this.zonotope = zonotope3_GeneralPosition(this.generators);
   }
-  
+
   this.sideLength = 1;
 }
 
@@ -825,13 +825,13 @@ ZonotopeCanvas3.prototype.aspect = function() {
 ZonotopeCanvas3.prototype.init = function() {
   var maxElementAbs = this.generators[0].x;
   var i, j, k;
-  
+
   for ( k = 0; k < this.generators.length; ++k ) {
     maxElementAbs = Math.max(maxElementAbs, Math.abs(this.generators[k].x));
     maxElementAbs = Math.max(maxElementAbs, Math.abs(this.generators[k].y));
     maxElementAbs = Math.max(maxElementAbs, Math.abs(this.generators[k].z));
   }
-    
+
   this.camera = new THREE.PerspectiveCamera( 75, this.aspect(), 1, 1000 );
   this.camera.position.z = this.generators.length * maxElementAbs;
   this.scene = new THREE.Scene();
@@ -845,13 +845,13 @@ ZonotopeCanvas3.prototype.init = function() {
     //     edgeVisited[i][j] = false;
     //   }
     // }
-    
+
     this.lineMaterial = new THREE.LineBasicMaterial({
       color:0x000000,
       linewidth: this.linewidth
     });
     this.lineObject3D = new THREE.Object3D;
-    
+
     for ( i = 0; i < this.zonotope.length; ++i ) {
       var f = this.zonotope[i];
       f.lineGeometry = new THREE.Geometry();
@@ -863,7 +863,7 @@ ZonotopeCanvas3.prototype.init = function() {
       this.lineObject3D.add(f.lineMesh);
     }
   }
-  
+
   this.geometry = zonotopeGeometry3(this.zonotope);
   this.meshNormalMaterial = new THREE.MeshNormalMaterial({ side: THREE.DoubleSide, transparent: false, opacity: 0.7 });
   this.mesh = new THREE.Mesh(this.geometry, this.meshNormalMaterial);
@@ -877,12 +877,12 @@ ZonotopeCanvas3.prototype.init = function() {
   this.parentElement.appendChild( this.renderer.domElement );
 
   window.addEventListener('resize', this.onWindowResize.bind(this), false);
-  
+
   this.controls = new THREE.TrackballControls( this.camera, this.parentElement );
   this.controls.rotateSpeed = 1.0;
   this.controls.zoomSpeed = 1.0;
   this.controls.panSpeed = 0.8;
-  
+
   this.controls.noZoom = false;
   this.controls.noPan = false;
 
@@ -892,7 +892,7 @@ ZonotopeCanvas3.prototype.init = function() {
 
 
 ZonotopeCanvas3.prototype.animate = function() {
-  window.requestAnimationFrame( this.animate.bind(this) );  
+  window.requestAnimationFrame( this.animate.bind(this) );
   this.controls.update();
   this.renderer.render(this.scene, this.camera);
 };
@@ -912,9 +912,9 @@ ZonotopeCanvas3.prototype.onWindowResize = function() {
 function GeneratorsDataTable(generators) {
   this.generators = generators;
   this.selection = d3.select("#generators").select("table");
-  this.numberFormatFn = function(d){return (new Number(d).toPrecision(4));};
+  this.numberFormatFn = function(d){return (Number(d).toPrecision(4));};
 
-  if ( generators[0].z == undefined ) {
+  if ( generators[0].z === undefined ) {
     this.tableHeaderData = ["x", "y", "length"];
     this.generatorsDataFn = function(d) { return [d.x, d.y, Geom2.norm(d)]; };
   } else {
@@ -933,7 +933,7 @@ GeneratorsDataTable.prototype.init = function() {
     .enter()
     .append("th")
     .text(function(d) {return d;});
-    
+
   this.selection
     .selectAll("tr.data")
     .data(this.generators)
