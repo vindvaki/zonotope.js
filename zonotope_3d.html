@@ -12,11 +12,12 @@
 		padding: 0;
 		width: 100%;
 		height: 100%;
+		background-color: white;
 	}
 
 	#zonotope-canvas-container {
 		float: left;
-		width: 49%;
+		width: 69%;
 		height: 100%;
 		margin: 0;
 		padding: 0;
@@ -28,11 +29,12 @@
 		height: 99%;
 		margin: 0;
 		padding: 0;
+		background-color: white;
 	}
 
 	#zonotope-generators-input-form {
 		float: right;
-		width: 50%;
+		width: 30%;
 		height: 100%;
 		background: #eee;
 		margin: 0;
@@ -113,9 +115,11 @@
 		generators = randomGenerators(3, n);
 		formStringArray = [];
 		for ( k = 0; k < n; ++k ) {
-			formStringArray[k] = [generators[k].x,
-			generators[k].y,
-			generators[k].z].join(" ");
+			formStringArray[k] = [
+				generators[k].x,
+				generators[k].y,
+				generators[k].z]
+			.join(" ");
 		}
 		zonotopeGeneratorsTextarea.value = formStringArray.join("\n");
 	}
@@ -156,9 +160,9 @@
 	function buildAxesXYZ( axisLength, colorX, colorY, colorZ ) {
 
 		var axes = new THREE.Object3D();
-		colorX = colorX || 0xFF0000;
-		colorY = colorY || 0x00FF00;
-		colorZ = colorZ || 0x0000FF;
+		colorX = colorX || 0xFF0000; // red
+		colorY = colorY || 0x00FF00; // green
+		colorZ = colorZ || 0x0000FF; // blue
 
 
 		axes.add( buildSingleAxis( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( axisLength, 0,  0 ), colorX, false ) ); // +X
@@ -173,20 +177,40 @@
 		return axes;
 	}
 
+	function renderGeneratorArrows3D(scene) {
+		var origin = new THREE.Vector3(0,0,0);
+		var n = generators.length;
+
+		for ( var k = 0; k < n; ++k ) {
+			var v = generators[k];
+			var len = Geom3.norm(v);
+			v = Geom3.scale(1/len, v);
+			var dir = new THREE.Vector3(v.x, v.y, v.z);
+			var hex = 0x0;
+			var arrowHelper = new THREE.ArrowHelper(dir, origin, len, hex);
+
+			scene.add(arrowHelper);
+		}
+	}
+
 	function renderFromInput() {
 		generators = getGenerators();
 		var drawFacetOutlines = false;
 		var degenerateData = false;
+		var opacity = 0.5;
 		zonotopeCanvas = new ZonotopeCanvas3(
 			generators,
 			drawFacetOutlines,
 			degenerateData,
-			'zonotope-canvas-container'
+			'zonotope-canvas-container',
+			opacity
 		);
 		zonotopeCanvas.parentElement.innerHTML = "";
 		zonotopeCanvas.init();
 		zonotopeCanvas.axes = buildAxesXYZ(1000);
 		zonotopeCanvas.scene.add(zonotopeCanvas.axes);
+
+		renderGeneratorArrows3D(zonotopeCanvas.scene);
 
 		zonotopeCanvas.animate();
 	}
