@@ -321,6 +321,7 @@ function zonotope3(generators) {
           finalizeFacet3(fneg, generators);
           facetList.push(fpos);
           facetList.push(fneg);
+          fneg.vertices.reverse();
         }
       }
     }
@@ -794,7 +795,7 @@ function randomGenerators(d, n, lo, hi) {
 // 3D zonotope canvas wrapper
 //
 
-function ZonotopeCanvas3(generators, drawFacetOutlines, degenerate, canvasId, resolution, opacity) {
+function ZonotopeCanvas3(generators, drawFacetOutlines, degenerate, canvasId, opacity, resolution) {
   this.canvasId = canvasId || "canvas-container";
   this.drawFacetOutlines = drawFacetOutlines || false;
   this.parentElement = document.getElementById(this.canvasId);
@@ -803,8 +804,8 @@ function ZonotopeCanvas3(generators, drawFacetOutlines, degenerate, canvasId, re
 
   this.generators = generators;
   this.degenerate = degenerate || false;
-  this.opacity = 0.75 || opacity;
-  this.transparent = true;( opacity >= 0.99 );
+  this.opacity = opacity || 0.75 ;
+  this.transparent = ( this.opacity <= 0.99 );
 
   this.linewidth = 1;
 
@@ -830,29 +831,46 @@ ZonotopeCanvas3.prototype.aspect = function() {
 };
 
 ZonotopeCanvas3.prototype.init = function() {
-  var maxElementAbs = this.generators[0].x;
-  var i, j, k;
+  var f, v, i, j, k;
 
-  for ( k = 0; k < this.generators.length; ++k ) {
-    maxElementAbs = Math.max(maxElementAbs, Math.abs(this.generators[k].x));
-    maxElementAbs = Math.max(maxElementAbs, Math.abs(this.generators[k].y));
-    maxElementAbs = Math.max(maxElementAbs, Math.abs(this.generators[k].z));
+  var boundingBox = {
+    x: {min: 0, max: 0},
+    y: {min: 0, max: 0},
+    z: {min: 0, max: 0}
+  };
+
+  for ( i = 0; i < this.zonotope.length; ++i ) {
+    f = this.zonotope[i];
+    for ( j = 0; j < f.vertices.length; ++j ) {
+      v = f.vertices[j];
+      boundingBox.x.min = Math.min(boundingBox.x.min, v.x);
+      boundingBox.x.max = Math.max(boundingBox.x.max, v.x);
+      boundingBox.y.min = Math.min(boundingBox.y.min, v.y);
+      boundingBox.y.max = Math.max(boundingBox.y.max, v.y);
+      boundingBox.z.min = Math.min(boundingBox.z.min, v.z);
+      boundingBox.z.max = Math.max(boundingBox.z.max, v.z);
+    }
   }
+  var boundingBoxAbs = [
+    boundingBox.x.min,
+    boundingBox.x.max,
+    boundingBox.y.min,
+    boundingBox.y.max,
+    boundingBox.z.min,
+    boundingBox.z.max
+  ].map(Math.abs);
+
+  var boundingBoxAbsMax = boundingBoxAbs.reduce(function(x,y) { return (x>=y)?x:y; });
+  var cameraCoordinate = 1.25 * boundingBoxAbsMax;
 
   this.camera = new THREE.PerspectiveCamera( 75, this.aspect(), 1, 1000 );
-  this.camera.position.z = this.generators.length * maxElementAbs;
+  this.camera.position.set(cameraCoordinate, -cameraCoordinate, cameraCoordinate);
+  this.camera.up = new THREE.Vector3(0,0,1);
+  this.camera.lookAt(new THREE.Vector3(0,0,0));
   this.scene = new THREE.Scene();
 
-
   if ( this.drawFacetOutlines ) {
-    // var edgeVisited = [];
-    // for ( i = 0; i < this.zonotope.length; ++i ) {
-    //   edgeVisited[i] = [];
-    //   for ( j = 0; i < this.zonotope.length; ++j ) {
-    //     edgeVisited[i][j] = false;
-    //   }
-    // }
-
+    
     this.lineMaterial = new THREE.LineBasicMaterial({
       color:0x000000,
       linewidth: this.linewidth
@@ -860,10 +878,10 @@ ZonotopeCanvas3.prototype.init = function() {
     this.lineObject3D = new THREE.Object3D();
 
     for ( i = 0; i < this.zonotope.length; ++i ) {
-      var f = this.zonotope[i];
+      f = this.zonotope[i];
       f.lineGeometry = new THREE.Geometry();
       for ( j = 0; j <= f.vertices.length; ++j ) {
-        var v = f.vertices[j % (f.vertices.length)];
+        v = f.vertices[j % (f.vertices.length)];
         f.lineGeometry.vertices.push(new THREE.Vector3(v.x, v.y, v.z));
       }
       f.lineMesh = new THREE.Line(f.lineGeometry, this.lineMaterial);
@@ -900,6 +918,7 @@ ZonotopeCanvas3.prototype.init = function() {
 
   window.addEventListener('resize', this.onWindowResize.bind(this), false);
 
+
   this.controls = new THREE.TrackballControls( this.camera, this.parentElement );
   this.controls.rotateSpeed = 1.0;
   this.controls.zoomSpeed = 1.0;
@@ -910,6 +929,8 @@ ZonotopeCanvas3.prototype.init = function() {
 
   this.controls.staticMoving = true;
   this.controls.dynamicDampingFactor = 0.3;
+
+
 };
 
 
