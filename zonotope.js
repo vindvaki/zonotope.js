@@ -540,6 +540,52 @@ function zonotopeGeometry3(zonotopeFacetList) {
   return geometry;
 }
 
+function zonotopeVertices3(facetList) {
+  var vertices = [];
+  facetList.forEach(function(f) {
+    f.vertices.forEach(function(v) {
+      vertices.push(v);
+    });
+  });
+  vertices.sort(function(u, v) {
+    if ( u.x < v.x ) {
+      return -1;
+    }
+    if ( u.x == v.x ) {
+      if ( u.y < v.y ) {
+        return -1;
+      }
+      if ( u.y == v.y ) {
+        if ( u.z < v.z ) {
+          return -1;
+        }
+        if ( u.z == v.z ) {
+          return 0;
+        }
+      }
+    }
+    return 1;
+  });
+  var i,j;
+  var verticesOut = [];
+  
+  i = 0;
+  j = 0;
+  while ( i < vertices.length ) {
+    while ( j < vertices.length && Geom3.equals(vertices[i], vertices[j]) ) {
+      ++j;
+    }
+    verticesOut.push(vertices[i]);
+    i = j;
+  }
+  
+  return verticesOut;
+}
+
+function strFromVertexList3(vertexList) {
+  return "[" + vertexList.map(Geom3.str).join(';\n') + "]";
+}
+
 
 //
 // SVG utilities
