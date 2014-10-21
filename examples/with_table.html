@@ -120,7 +120,7 @@
        var svg = d3.select("#canvas-container")
                    .append("svg")
                    .attr("id", "svg-canvas");
-       var zSvg = new ZonogonSvg(svg, generators, offset);
+       var zSvg = new ZonogonSVG(svg, generators, offset);
        zSvg.draw();
        var k;
        for ( k = 0; k < n; ++k ) {
@@ -165,7 +165,7 @@
 
     </div>
 
-    <script src="zonotope.js"></script>
+    <script src="../build/zonotope.js"></script>
     <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 		<script src="https://rawgithub.com/mrdoob/three.js/master/build/three.js"></script>
 		<script src="https://rawgithub.com/mrdoob/three.js/master/examples/js/controls/TrackballControls.js"></script>
