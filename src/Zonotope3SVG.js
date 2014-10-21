@@ -1,8 +1,16 @@
-function Zonotope3SVG(canvasId, generators, degenerate) {
+function Zonotope3SVG(canvasId, generators, options ) {
   var self = this;
   self.canvasId = canvasId;
   self.generators = generators;
-  self.degenerate = !!degenerate;
+
+  var defaultOptions = {
+    degenerate: false,
+    alpha: 0.8
+  };
+  options = options || defaultOptions;
+
+  self.degenerate = !!options.degenerate || defaultOptions.degenerate;
+  self.alpha = options.alpha || defaultOptions.alpha;
 
   self.canvas = document.getElementById(canvasId);
   
@@ -16,7 +24,7 @@ function Zonotope3SVG(canvasId, generators, degenerate) {
   });
   self.context = seen.Context(self.canvasId, self.scene).render();
 
-  var onWindowResize = function() {
+  this.redraw = function() {
     var canvasComputedStyle = window.getComputedStyle(self.canvas);
     self.width = canvasComputedStyle.width;
     self.height = canvasComputedStyle.height;
@@ -26,7 +34,14 @@ function Zonotope3SVG(canvasId, generators, degenerate) {
     self.context.render();
   };
 
-  window.onresize = onWindowResize;
+  if ( window.onresize ) {
+    window.onresize = function() {
+      window.onresize();
+      this.redraw();
+    };
+  } else {
+    window.onresize = this.redraw;
+  }
   
   if ( self.degenerate ) {
     self.facetList = zonotope3(generators);
@@ -46,7 +61,7 @@ function Zonotope3SVG(canvasId, generators, degenerate) {
 
   self.shape.surfaces.forEach(function(surface) {
 	var minBrightness = 0.5;
-	var alpha = 1.0;
+	var alpha = 0.8;
 	var brightnessFn = function(c) {
 	  return (1 - minBrightness) * c + minBrightness;
 	};
@@ -61,11 +76,6 @@ function Zonotope3SVG(canvasId, generators, degenerate) {
   });
 
   self.scene.model.add(self.shape);
-
-  self.animator = new seen.Animator().onFrame(function(t, dt) {
-	self.shape.rotx(dt*3e-4).roty(dt*2e-4);
-	self.context.render();
-  });
   
-  onWindowResize();
+  this.redraw();
 }
