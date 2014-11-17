@@ -88,3 +88,50 @@ function applyNormalColorToSurface(surface) {
   surface.fill.metallic = false;
   surface.fill.specularExponent = 8;
 }
+
+function makeVectorArrow(v) {
+  var thickness = 0.5;
+  var tailLength = Geom3.norm(v);
+  var tailWidth = thickness;
+  var headLength = 1;
+  var headPointiness = 0;
+  var arrow = seen.Shapes.arrow(
+    thickness,
+    tailLength,
+    tailWidth,
+    headLength,
+    headPointiness
+  );
+
+  // arrow direction is (-1,0,0)
+  // flip arrow to point away from the origin
+  arrow.rotz(Math.PI);
+  arrow.translate(tailLength);
+  // arrow direction is (1,0,0)
+
+  var xyNorm = Math.sqrt(v.x*v.x + v.y*v.y);
+  var x0 = v.x / xyNorm;
+  var y0 = v.y / xyNorm;
+
+  // apply the correct z-direction
+  var a = Geom3.scale(1/Geom3.norm(v), v);
+  var b = { x: x0, y: y0, z: 0 };
+  var zAngle = Math.acos(Geom3.dot(a, b));
+  if ( v.z < 0 ) {
+    zAngle = -zAngle;
+  }
+  arrow.roty(-zAngle);
+
+  // apply the correct x-y-direction
+  var xyAngle = Math.acos(x0);
+  if ( v.y < 0 ) {
+    xyAngle = -xyAngle;
+  }
+  arrow.rotz(xyAngle);
+
+  arrow.surfaces.forEach(function(surface) {
+    surface.fill = new seen.Material(seen.Colors.rgb(0,0,0));
+  });
+
+  return arrow;
+}
