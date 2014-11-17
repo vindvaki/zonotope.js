@@ -5,7 +5,7 @@
 // zonogon (2d-zonotope) implementation
 //
 
-function zonogon(generators) {
+function zonogonVertexArray(generators) {
   var edges, vertices, offset, i, v;
 
   edges = [];

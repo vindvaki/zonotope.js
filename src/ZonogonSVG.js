@@ -39,7 +39,7 @@ function ZonogonSVG(svg, generators, offset, zonogonId) {
   this.svg = svg;
   this.generators = generators;
   this.offset = offset;
-  this.zonogon = zonogon(generators);
+  this.zonogon = zonogonVertexArray(generators);
   this.zonogonId = zonogonId || "zonogon";
 
 
@@ -188,7 +188,7 @@ ZonogonSVG.prototype.initGeneratorArrow = function(origin, k, callback) {
     arrow.clickTargetSelection
       .attr("d", line([origin, arrow.clickTargetEndpoint()]));
 
-    _this.zonogon = zonogon(generators);
+    _this.zonogon = zonogonVertexArray(generators);
     _this.redraw();
 
     callback();
