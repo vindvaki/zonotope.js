@@ -1,26 +1,28 @@
-function Zonotope3SVG(canvasId, generators, options ) {
+function Zonotope3SVG(canvasId, generators, options) {
   var self = this;
   self.canvasId = canvasId;
   self.generators = generators;
 
   var defaultOptions = {
     degenerate: false,
-    alpha: 0.8
+    alpha: 0.8,
+    shapeColorFn: applyNormalColorToShape
   };
   options = options || defaultOptions;
 
   self.degenerate = !!options.degenerate || defaultOptions.degenerate;
   self.alpha = options.alpha || defaultOptions.alpha;
+  self.shapeColorFn = options.shapeColorFn || defaultOptions.shapeColorFn;
 
   self.canvas = document.getElementById(canvasId);
-  
+
   self.width = 100;
   self.height = 100;
-  
+
   self.scene = scene = new seen.Scene({
-	fractionalPoints: true,
-	model: seen.Models.default(),
-	viewport: seen.Viewports.center(self.width, self.height)
+  	fractionalPoints: true,
+  	model: seen.Models.default(),
+  	viewport: seen.Viewports.center(self.width, self.height)
   });
   self.context = seen.Context(self.canvasId, self.scene).render();
 
@@ -42,13 +44,13 @@ function Zonotope3SVG(canvasId, generators, options ) {
   } else {
     window.onresize = this.redraw;
   }
-  
+
   if ( self.degenerate ) {
     self.facetList = zonotope3(generators);
   } else {
     self.facetList = zonotope3_GeneralPosition(generators);
   }
-  
+
   self.shape = new seen.Shape('zonotope', self.facetList.map(function(f) {
     var points = f.vertices.map(function(v) {
       return new seen.Point(v.x, v.y, v.z);
@@ -59,23 +61,30 @@ function Zonotope3SVG(canvasId, generators, options ) {
     return surface;
   }));
 
-  self.shape.surfaces.forEach(function(surface) {
-	var minBrightness = 0.5;
-	var alpha = 0.8;
-	var brightnessFn = function(c) {
-	  return (1 - minBrightness) * c + minBrightness;
-	};
-	surface.fill = new seen.Material(seen.Colors.rgb(
-	  255 * brightnessFn(surface.normal.x),
-	  255 * brightnessFn(surface.normal.y),
-	  255 * brightnessFn(surface.normal.z),
-	  255 * alpha
-	));
-	surface.fill.metallic = false;
-	surface.fill.specularExponent = 8;
-  });
+
+  self.shapeColorFn(self.shape);
 
   self.scene.model.add(self.shape);
-  
+
   this.redraw();
+}
+
+function applyNormalColorToShape(seenShape) {
+  seenShape.surfaces.forEach(applyNormalColorToSurface);
+}
+
+function applyNormalColorToSurface(surface) {
+  var minBrightness = 0.5;
+  var alpha = 0.8;
+  var brightnessFn = function(c) {
+    return (1 - minBrightness) * c + minBrightness;
+  };
+  surface.fill = new seen.Material(seen.Colors.rgb(
+    255 * brightnessFn(surface.normal.x),
+    255 * brightnessFn(surface.normal.y),
+    255 * brightnessFn(surface.normal.z),
+    255 * alpha
+  ));
+  surface.fill.metallic = false;
+  surface.fill.specularExponent = 8;
 }
